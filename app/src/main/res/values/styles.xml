@@ -1,0 +1,43 @@
+<resources>
+
+    <style name="Theme.App" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="toolbarStyle">@style/Widget.App.Toolbar</item>
+
+        <!-- Styles used by Geidea UI components embedded in the sample app UI -->
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>
+        <item name="gd_textInputExposedDropdownMenuStyle">
+            @style/Gd.Widget.TextInputLayout.OutlinedBox.ExposedDropdownMenu
+        </item>
+        <item name="materialAlertDialogTheme">@style/Theme.MaterialComponents.DayNight.Dialog.Alert</item>
+
+        <item name="colorPrimary">@color/gd_blue</item>
+        <item name="colorSecondary">@color/gd_orange</item>
+        <item name="colorOnSecondary">@color/gd_white</item>
+        <item name="colorOnSurface">@color/gd_greyStroke</item>
+        <item name="colorError">@color/gd_pink</item>
+
+        <item name="android:statusBarColor">?colorSecondary</item>
+    </style>
+
+    <style name="Widget.App.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.App.Toolbar.Secondary</item>
+    </style>
+
+    <style name="ThemeOverlay.App.Toolbar.Secondary" parent="">
+        <item name="colorPrimary">?colorSecondary</item>
+        <item name="colorOnPrimary">?colorOnSecondary</item>
+    </style>
+
+    <style name="Text.Medium" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textSize">16sp</item>
+        <item name="android:typeface">sans</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="Text.Small" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textSize">12sp</item>
+        <item name="android:typeface">sans</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+</resources>

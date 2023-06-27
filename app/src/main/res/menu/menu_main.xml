@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="Samples" >
+        <menu >
+            <item
+                android:id="@+id/item_simplest_payment_sample"
+                android:title="Simplest payment sample"
+                />
+
+            <item
+                android:id="@+id/item_paymentformview_sample"
+                android:title="PaymentFormView sample"
+                />
+
+            <item
+                android:id="@+id/item_cardinputview_sample"
+                android:title="CardInputView sample"
+                />
+
+            <item
+                android:id="@+id/item_card_fields_sample"
+                android:title="Card input fields sample"
+                />
+
+            <item
+                android:id="@+id/item_addressinputview_sample"
+                android:title="AddressInputView sample" />
+
+            <item
+                android:id="@+id/item_address_fields_sample"
+                android:title="Address input fields sample"
+                />
+
+            <item
+                android:id="@+id/item_payment_intents_sample"
+                android:title="Payment intents sample"
+                />
+
+            <item
+                android:id="@+id/item_orders_sample"
+                android:title="Orders sample"
+                />
+        </menu>
+    </item>
+</menu>
