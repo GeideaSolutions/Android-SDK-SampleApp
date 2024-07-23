@@ -48,51 +48,82 @@ class MainActivity : AppCompatActivity() {
 
             val internalTestMode: Boolean = true    // TODO make configurable
             environmentLabel.isVisible = internalTestMode
-            environmentToggleGroup.isVisible = internalTestMode
+            merchantAutoCompleteEnv.isVisible = internalTestMode
             if (internalTestMode) {
-                // For internal testing
 
                 // Set the last-used server environment
                 sharedPreferences =
                     PreferenceManager.getDefaultSharedPreferences(applicationContext)
                 when (sharedPreferences.getString(PREF_KEY_SERVER_ENVIRONMENT, null)) {
 
-                    ServerEnvironment.PreProd.apiBaseUrl -> {
-                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.PreProd
+                    ServerEnvironment.EGY_PREPROD.apiBaseUrl -> {
+                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.EGY_PREPROD
+                        merchantAutoCompleteEnv.setText(ServerEnvironment.EGY_PREPROD.title)
                         callbackUrlEditText.setText("")
+                        returnUrlEditText.setText("")
                     }
 
-                    ServerEnvironment.Prod.apiBaseUrl -> {
-                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.Prod
+                    ServerEnvironment.EGY_PROD.apiBaseUrl -> {
+                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.EGY_PROD
+                        merchantAutoCompleteEnv.setText(ServerEnvironment.EGY_PROD.title)
                         callbackUrlEditText.setText("")
+                        returnUrlEditText.setText("")
+                    }
+
+                    ServerEnvironment.UAE_PREPROD.apiBaseUrl -> {
+                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.UAE_PREPROD
+                        merchantAutoCompleteEnv.setText(ServerEnvironment.UAE_PREPROD.title)
+                        callbackUrlEditText.setText("")
+                        returnUrlEditText.setText("")
+                    }
+
+                    ServerEnvironment.UAE_PROD.apiBaseUrl -> {
+                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.UAE_PROD
+                        merchantAutoCompleteEnv.setText(ServerEnvironment.UAE_PROD.title)
+                        callbackUrlEditText.setText("")
+                        returnUrlEditText.setText("")
+                    }
+
+                    ServerEnvironment.KSA_PREPROD.apiBaseUrl -> {
+                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.KSA_PREPROD
+                        merchantAutoCompleteEnv.setText(ServerEnvironment.KSA_PREPROD.title)
+                        callbackUrlEditText.setText("")
+                        returnUrlEditText.setText("")
+                    }
+
+                    ServerEnvironment.KSA_PROD.apiBaseUrl -> {
+                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.KSA_PROD
+                        merchantAutoCompleteEnv.setText(ServerEnvironment.KSA_PROD.title)
+                        callbackUrlEditText.setText("")
+                        returnUrlEditText.setText("")
                     }
                 }
 
-                environmentToggleGroup.check(
-                    when (GeideaPaymentSdk.serverEnvironment) {
-                        ServerEnvironment.Prod -> R.id.prodEnvButton
-                        else -> {
-                            R.id.preprodEnvButton
-                        }
-                    }
-                )
-                environmentToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-                    if (isChecked) {
-                        when (checkedId) {
-                            R.id.preprodEnvButton -> GeideaPaymentSdk.serverEnvironment =
-                                ServerEnvironment.PreProd
 
-                            R.id.prodEnvButton -> GeideaPaymentSdk.serverEnvironment =
-                                ServerEnvironment.Prod
-                        }
+                val environmentsAdapter = DropDownAdapter(this@MainActivity, environments)
+                merchantAutoCompleteEnv.setAdapter(environmentsAdapter)
+                if (savedInstanceState == null) {
+                    merchantAutoCompleteEnv.setText(environments[0].text, false)
+                }
+                var env = sharedPreferences.getString(PREF_KEY_SERVER_ENVIRONMENT, null);
+                env?.let {
+                    val position = getPos(environments, env)
+                    merchantAutoCompleteEnv.setSelection(position)
+                    merchantAutoCompleteEnv.setText(environments[position].text)
+                }
+
+                merchantAutoCompleteEnv.setOnItemClickListener { _, _, position, _ ->
+                    val environment: ServerEnvironment? =
+                        environmentsAdapter.getItem(position).value
+                    environment?.let {
                         sharedPreferences.edit()
                             .putString(
                                 PREF_KEY_SERVER_ENVIRONMENT,
-                                GeideaPaymentSdk.serverEnvironment.apiBaseUrl
+                                it.apiBaseUrl
                             )
                             .apply()
-                        clearMerchantLocalStateWithWarning()
-                        updateMerchantCredentialsLayout()
+                        GeideaPaymentSdk.serverEnvironment = it
+                        logoutMerchant()
                     }
                 }
             }
@@ -225,6 +256,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun getPos(environments: List<DropDownItem<ServerEnvironment>>, env: String): Int {
+        return environments.indexOfFirst { it.value?.apiBaseUrl == env }.takeIf { it >= 0 } ?: 0
+    }
+
     override fun onStart() {
         super.onStart()
         updateViews()
@@ -257,14 +292,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun loginMerchant() = with(binding) {
         //todo - remove hardcoded values
-        val merchantKey: String? = merchantKeyEditText.textOrNull?.trim()
-        val merchantPassword: String? = merchantPasswordEditText.textOrNull?.trim()
+        val merchantKey: String? = merchantKeyEditText.textOrNull?.trim() ?: BuildConfig.API_KEY
+        val merchantPassword: String? =
+            merchantPasswordEditText.textOrNull?.trim() ?: BuildConfig.API_PASS
         when {
-            merchantKey == null -> {
+            merchantKey.isNullOrEmpty() -> {
                 snack("Missing merchant key")
             }
 
-            merchantPassword == null -> {
+            merchantPassword.isNullOrEmpty() -> {
                 snack("Missing merchant password")
             }
 
@@ -377,6 +413,7 @@ class MainActivity : AppCompatActivity() {
             currencyEditText.setText(sharedPreferences.getStringOrNull("currency"))
             merchantRefIdEditText.setText(sharedPreferences.getStringOrNull("merchantReferenceId"))
             callbackUrlEditText.setText(sharedPreferences.getStringOrNull("callbackUrl"))
+            returnUrlEditText.setText(sharedPreferences.getStringOrNull("returnUrl"))
 
             customerEmailEditText.setText(sharedPreferences.getStringOrNull("customerEmail"))
             billingCountryCodeEditText.setText(sharedPreferences.getStringOrNull("countryCode"))
@@ -421,6 +458,7 @@ class MainActivity : AppCompatActivity() {
         val currency = currencyEditText.textOrNull
         val merchantReferenceId = merchantRefIdEditText.textOrNull
         val callbackUrl = callbackUrlEditText.textOrNull
+        val returnUrl = returnUrlEditText.textOrNull
         val customerEmail = customerEmailEditText.textOrNull
 
         val countryCode = billingCountryCodeEditText.textOrNull
@@ -449,6 +487,7 @@ class MainActivity : AppCompatActivity() {
             putString("currency", currency)
             putString("merchantReferenceId", merchantReferenceId)
             putString("callbackUrl", callbackUrl)
+            putString("returnUrl", returnUrl)
             putString("customerEmail", customerEmail)
             putString("countryCode", countryCode)
             putString("street", street)
@@ -572,5 +611,10 @@ class MainActivity : AppCompatActivity() {
             DropDownItem(R.style.Theme_Sdk_Example_Outlined, "Theme.Sdk.Example.Outlined"),
             DropDownItem(R.style.Theme_Sdk_Example_Filled, "Theme.Sdk.Example.Filled"),
         )
+        val environments = ServerEnvironment.environments().map {
+            DropDownItem(
+                it, it.title
+            )
+        }
     }
 }

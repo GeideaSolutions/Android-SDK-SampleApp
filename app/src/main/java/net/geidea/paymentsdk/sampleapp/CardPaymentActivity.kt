@@ -23,6 +23,7 @@ import net.geidea.paymentsdk.flow.GeideaContract
 import net.geidea.paymentsdk.flow.GeideaResult
 import net.geidea.paymentsdk.flow.pay.PaymentContract
 import net.geidea.paymentsdk.flow.pay.PaymentData
+import net.geidea.paymentsdk.flow.pay.PaymentType
 import net.geidea.paymentsdk.model.Address
 import net.geidea.paymentsdk.model.ExpiryDate
 import net.geidea.paymentsdk.model.PaymentMethod
@@ -65,6 +66,10 @@ class CardPaymentActivity : AppCompatActivity() {
                     R.id.byMerchantRadioButton -> {
                         updateViews(transition = true)
                     }
+
+                    R.id.hpp -> {
+                        updateViews(transition = true)
+                    }
                 }
             }
 
@@ -86,14 +91,40 @@ class CardPaymentActivity : AppCompatActivity() {
                     snack("Please enter valid amount to pay")
                     return@setOnClickListener
                 }
+                when (sharedPreferences.getString(MainActivity.PREF_KEY_SERVER_ENVIRONMENT, null)) {
 
-                GeideaPaymentSdk.serverEnvironment = ServerEnvironment.Prod
+                    ServerEnvironment.EGY_PREPROD.apiBaseUrl -> {
+                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.EGY_PREPROD
+                    }
+
+                    ServerEnvironment.EGY_PROD.apiBaseUrl -> {
+                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.EGY_PROD
+                    }
+
+                    ServerEnvironment.UAE_PREPROD.apiBaseUrl -> {
+                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.UAE_PREPROD
+                    }
+
+                    ServerEnvironment.UAE_PROD.apiBaseUrl -> {
+                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.UAE_PROD
+                    }
+
+                    ServerEnvironment.KSA_PREPROD.apiBaseUrl -> {
+                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.KSA_PREPROD
+                    }
+
+                    ServerEnvironment.KSA_PROD.apiBaseUrl -> {
+                        GeideaPaymentSdk.serverEnvironment = ServerEnvironment.KSA_PROD
+                    }
+                }
+
                 val paymentData = PaymentData {
                     amount = amountEditText.textOrNull?.let(::BigDecimal)
                     paymentOperation = sharedPreferences.getString("paymentOperation", null)
                     currency = sharedPreferences.getString("currency", null)
                     merchantReferenceId = sharedPreferences.getString("merchantReferenceId", null)
                     callbackUrl = sharedPreferences.getString("callbackUrl", null)
+                    returnUrl = sharedPreferences.getString("returnUrl", null)
                     customerEmail = sharedPreferences.getString("customerEmail", null)
 
                     billingAddress = Address(
@@ -139,6 +170,7 @@ class CardPaymentActivity : AppCompatActivity() {
                             cvv = cardDetails.cvvEditText.textOrNull
                         }
                     }
+                    paymentType = if (hpp.isChecked) PaymentType.HPP else PaymentType.SDK
                 }
                 paymentLauncher.launch(paymentData)
             }
